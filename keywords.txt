@@ -1,0 +1,19 @@
+#######################################
+# Syntax Coloring Map For HT1622
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+HT1622	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+clear	KEYWORD2
+backlight	KEYWORD2
+noBacklight	KEYWORD2
+print	KEYWORD2
