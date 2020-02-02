@@ -118,6 +118,8 @@ class HT1622: public Print {
         void sendBits(uint16_t data, uint8_t bits, boolean LSB_FIRST = HT1622_MSB_FORMAT);
         void sendBitsSpi(uint16_t data, uint8_t bits, boolean LSB_FIRST = HT1622_MSB_FORMAT);
     public:
+        bool noRedraw = false;
+
         HT1622();
         HT1622(int cs, int wr, int data, int backlight = -1);
 

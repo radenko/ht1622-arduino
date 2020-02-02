@@ -28,6 +28,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <Arduino.h>
 #include "HT1622.h"
 
+//#define SERIAL_DEBUG Serial
+
 void HT1622::changeBits(uint16_t src, uint16_t &dst, uint8_t srcBit, uint8_t dstBit) {
     int srcMask = 1 << srcBit;
     int dstMask = 1 << dstBit;
@@ -118,7 +120,11 @@ void HT1622::endTransfer() {
 }
 
 void HT1622::clear() {
+    this->seekLeft();
     this->allSegments(0);
+    if (this->digitBuffer != NULL) {
+        memset(this->digitBuffer, 0, this->digitBufferSize * sizeof(this->digitBuffer[0]));
+    }
 }
 
 void HT1622::sendBitsSpi(uint16_t data, uint8_t bits, boolean LSB_FIRST)
@@ -137,8 +143,8 @@ void HT1622::sendBitsSpi(uint16_t data, uint8_t bits, boolean LSB_FIRST)
         data = data & (0xFFFF >> (16 - bits));
 
         if (_outBits == 8) {
-            //Serial.print("--Writing bits: ");
-            //Serial.println(this->_outBuff, BIN);
+            //SERIAL_DEBUG.print("--Writing bits: ");
+            //SERIAL_DEBUG.println(this->_outBuff, BIN);
             this->_spi->transfer(this->_outBuff);
             _outBuff = 0;
             _outBits = 0;
@@ -158,9 +164,9 @@ void HT1622::sendBits(uint16_t data, uint8_t bits, boolean LSB_FIRST)
         mask = (LSB_FIRST ? 1 : 1 << bits - 1);
         //printf("Writing %d bits of 0x%04x with mask 0x%04x in %s\n", bits, data, mask, LSB_FIRST?"LSB":"MSB");
 
-        //Serial.print("++Writing bits: ");
+        //SERIAL_DEBUG.print("++Writing bits: ");
         for (uint8_t i = bits; i > 0; i--) {
-            Serial.print(data & mask ? 1 : 0);
+            //SERIAL_DEBUG.print(data & mask ? 1 : 0);
 
             digitalWrite(this->_wr_p, LOW);
             delayMicroseconds(HT1622_WRITE_DELAY_USECS);
@@ -170,7 +176,7 @@ void HT1622::sendBits(uint16_t data, uint8_t bits, boolean LSB_FIRST)
             delayMicroseconds(HT1622_WRITE_DELAY_USECS);
             LSB_FIRST ? data >>= 1 : data <<= 1;
         }
-        Serial.println();
+        //SERIAL_DEBUG.println();
         delayMicroseconds(HT1622_WRITE_DELAY_USECS);
     }
 }
@@ -209,10 +215,10 @@ void HT1622::allSegments(uint8_t state)
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 void HT1622::wrData(uint8_t addr, uint16_t sdata, uint8_t bits)
 {
-    Serial.print("Writing data ");
-    Serial.print(sdata);
-    Serial.print(" to ");
-    Serial.println(addr);
+//    SERIAL_DEBUG.print("Writing data ");
+//    SERIAL_DEBUG.print(sdata);
+//    SERIAL_DEBUG.print(" to ");
+//    SERIAL_DEBUG.println(addr);
 
     this->beginTransfer();
     this->sendBits(0b101, 3);
@@ -225,7 +231,7 @@ void HT1622::wrData(uint8_t addr, uint16_t sdata, uint8_t bits)
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 void HT1622::wrBuffer()
 {
-    Serial.print("Writing  buffer");
+//    SERIAL_DEBUG.print("Writing  buffer");
 
     this->beginTransfer();
     this->sendBits(0b101, 3);
@@ -248,7 +254,9 @@ void HT1622::writeSegment(const uint8_t nr, const char value) {
 
     if (this->digitBuffer != NULL) {
         this->digitBuffer[nr] = this->_charAdapter == NULL ? data : this->_charAdapter(data);
-        this->wrBuffer();
+        if (!this->noRedraw) {
+            this->wrBuffer();
+        }
     } else {
         wrData(_digitAddr[nr], (this->_charAdapter == NULL ? data : this->_charAdapter(data)), 16);
     }

@@ -2,6 +2,8 @@
 #include <displays/DM8BA10.h>
 #include <SPI.h>
 
+#define ONESHOT_DRAW
+
 #define BLED 25
 
 #define SCK 5
@@ -20,13 +22,25 @@ void setup() {
   htDriver.begin(SPI, SS, BLED);
   //htDriver.begin(SS, SCK, MOSI);
   
-  displayOn = millis();
+  displayOn = 0;
 }
 
 
 void loop() {
-  if (millis() - displayOn > 1000) {
-    htDriver.seekLeft();
+  //redraw every 60 seconds
+  if (displayOn == 0 || millis() - displayOn > 60000) {
+    htDriver.clear();
+#ifdef ONESHOT_DRAW
+    htDriver.noRedraw = true;
+    htDriver.print("He");
+    htDriver.print("l");
+    htDriver.print("l");
+    htDriver.print("o");
+    htDriver.print(millis() / 60000);
+    
+    htDriver.wrBuffer();
+#else
+    htDriver.noRedraw = false;
     htDriver.print("He");
     delay(2000);
     htDriver.print("l");
@@ -35,8 +49,9 @@ void loop() {
     delay(2000);
     htDriver.print("o");
     delay(2000);
-    //htDriver.print(millis() / 1000);
+    htDriver.print(millis() / 60000);
+#endif
 
-    displayOn = millis();
+    displayOn = millis();    
   }
 }
