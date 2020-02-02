@@ -51,6 +51,7 @@ Bit numbering via a little-endian uint16_t mapped to 4 addresses:
 //Digit addresses starting from right
 //const uint8_t DM8BA10_DIGIT_ADDR[] = {0x00, 0x04, 0x08, 0x0C, 0x10, 0x14, 0x18, 0x1C, 0x20, 0x24};
 const uint8_t DM8BA10_DIGIT_ADDR[] = {0x24, 0x20, 0x1C, 0x18, 0x14, 0x10, 0x0C, 0x08, 0x04, 0x00};
+uint16_t DM8BA10_DIGIT_BUFF[ARRAY_SIZE(DM8BA10_DIGIT_ADDR)];
 
 uint16_t DM8BA10_adaptChar(uint16_t src) {
     uint16_t dst = src;
@@ -67,9 +68,10 @@ uint16_t DM8BA10_adaptChar(uint16_t src) {
     return dst;
 };
 
-void DM8BA10_setup(HT1622 &dm8ba10) {
-    dm8ba10.setDigitAddr(DM8BA10_DIGIT_ADDR, ARRAY_SIZE(DM8BA10_DIGIT_ADDR));
-    dm8ba10.setCharAdapter(&DM8BA10_adaptChar);
+void DM8BA10_setup(HT1622 &ht1622) {
+    ht1622.setDigitAddr(DM8BA10_DIGIT_ADDR, ARRAY_SIZE(DM8BA10_DIGIT_ADDR));
+    ht1622.setDigitBuff(DM8BA10_DIGIT_BUFF, ARRAY_SIZE(DM8BA10_DIGIT_BUFF));
+    ht1622.setCharAdapter(&DM8BA10_adaptChar);
 }
 
 #endif //HT1622_DM8BA10_H

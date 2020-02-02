@@ -114,6 +114,7 @@ void HT1622::endTransfer() {
     }
 
     digitalWrite(_cs_p, HIGH);
+    delay(1);
 }
 
 void HT1622::clear() {
@@ -136,8 +137,8 @@ void HT1622::sendBitsSpi(uint16_t data, uint8_t bits, boolean LSB_FIRST)
         data = data & (0xFFFF >> (16 - bits));
 
         if (_outBits == 8) {
-            Serial.print("--Writing bits: ");
-            Serial.println(this->_outBuff, BIN);
+            //Serial.print("--Writing bits: ");
+            //Serial.println(this->_outBuff, BIN);
             this->_spi->transfer(this->_outBuff);
             _outBuff = 0;
             _outBits = 0;
@@ -157,7 +158,7 @@ void HT1622::sendBits(uint16_t data, uint8_t bits, boolean LSB_FIRST)
         mask = (LSB_FIRST ? 1 : 1 << bits - 1);
         //printf("Writing %d bits of 0x%04x with mask 0x%04x in %s\n", bits, data, mask, LSB_FIRST?"LSB":"MSB");
 
-        Serial.print("++Writing bits: ");
+        //Serial.print("++Writing bits: ");
         for (uint8_t i = bits; i > 0; i--) {
             Serial.print(data & mask ? 1 : 0);
 
@@ -208,11 +209,30 @@ void HT1622::allSegments(uint8_t state)
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 void HT1622::wrData(uint8_t addr, uint16_t sdata, uint8_t bits)
 {
+    Serial.print("Writing data ");
+    Serial.print(sdata);
+    Serial.print(" to ");
+    Serial.println(addr);
+
     this->beginTransfer();
     this->sendBits(0b101, 3);
     this->sendBits(addr, 6);
     this->sendBits(sdata, bits, HT1622_MSB_FORMAT);
     //this->sendBits(0,  8 - ((3+6+bits) % 8));
+    this->endTransfer();
+}
+
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+void HT1622::wrBuffer()
+{
+    Serial.print("Writing  buffer");
+
+    this->beginTransfer();
+    this->sendBits(0b101, 3);
+    this->sendBits(0, 6);
+    for (int i=this->digitBufferSize - 1; i >= 0; i--) {
+        this->sendBits(this->digitBuffer[i], 16);
+    }
     this->endTransfer();
 }
 
@@ -226,13 +246,28 @@ void HT1622::writeSegment(const uint8_t nr, const char value) {
         data = this->_charset[value - 0x20];
     }
 
-    wrData(_digitAddr[nr], (this->_charAdapter == NULL ? data : this->_charAdapter(data)), 16);
+    if (this->digitBuffer != NULL) {
+        this->digitBuffer[nr] = this->_charAdapter == NULL ? data : this->_charAdapter(data);
+        this->wrBuffer();
+    } else {
+        wrData(_digitAddr[nr], (this->_charAdapter == NULL ? data : this->_charAdapter(data)), 16);
+    }
 }
 
 void HT1622::setDigitAddr(const uint8_t *digitAddr, const uint8_t digitAddrCount) {
     this->_digitAddr = digitAddr;
     this->_digitAddrCount = digitAddrCount;
     this->seekLeft();
+}
+
+void HT1622::setDigitBuff(uint16_t *buffer, const uint8_t bufferSize) {
+    this->digitBuffer = buffer;
+    this->digitBufferSize = bufferSize;
+}
+
+void HT1622::setDigitBuffClear(uint16_t *buffer, const uint8_t bufferSize) {
+    this->setDigitBuff(buffer, bufferSize);
+    memset(this->digitBuffer, 0, this->digitBufferSize * sizeof(buffer[0]));
 }
 
 void HT1622::seekLeft() {

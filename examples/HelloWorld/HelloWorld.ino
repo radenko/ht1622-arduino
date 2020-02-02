@@ -18,6 +18,7 @@ void setup() {
   DM8BA10_setup(htDriver);
   SPI.begin(SCK, MISO, MOSI, -1);
   htDriver.begin(SPI, SS, BLED);
+  //htDriver.begin(SS, SCK, MOSI);
   
   displayOn = millis();
 }
@@ -26,8 +27,15 @@ void setup() {
 void loop() {
   if (millis() - displayOn > 1000) {
     htDriver.seekLeft();
-    htDriver.print("Hello");
-    htDriver.print(millis() / 1000);
+    htDriver.print("He");
+    delay(2000);
+    htDriver.print("l");
+    delay(2000);
+    htDriver.print("l");
+    delay(2000);
+    htDriver.print("o");
+    delay(2000);
+    //htDriver.print(millis() / 1000);
 
     displayOn = millis();
   }

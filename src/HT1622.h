@@ -97,8 +97,12 @@ class HT1622: public Print {
         SPIClass *_spi;
 
         bool _backlight_en;
-        const uint8_t *_digitAddr;
-        uint8_t _digitAddrCount;
+        const uint8_t *_digitAddr = NULL;
+        uint8_t        _digitAddrCount = 0;
+
+        uint16_t *digitBuffer = 0;
+        uint8_t        digitBufferSize = 0;
+
         const uint16_t *_charset = (const uint16_t*)&HT1622_SEG_CHARSET;
         uint8_t _charsetLen = ARRAY_SIZE(HT1622_SEG_CHARSET);
         uint8_t _outBits = 0;
@@ -118,6 +122,8 @@ class HT1622: public Print {
         HT1622(int cs, int wr, int data, int backlight = -1);
 
         void setDigitAddr(const uint8_t *digitAddr, const uint8_t digitAddrCount);
+        void setDigitBuff(uint16_t *buffer, const uint8_t bufferSize);
+        void setDigitBuffClear(uint16_t *buffer, const uint8_t bufferSize);
         void setCharset(const uint8_t *digitAddr, const uint8_t digitAddrCount);
         void setCharAdapter(uint16_t (*charAdapter)(uint16_t character));
 
@@ -133,6 +139,7 @@ class HT1622: public Print {
         void noBacklight();
         void wrCommand(unsigned char CMD);
         void wrData(uint8_t addr, uint16_t sdata, uint8_t bits = 4);
+        void wrBuffer();
         void config();
 
         void clear();
