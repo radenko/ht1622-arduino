@@ -20,17 +20,8 @@ Turns on the backlight
 * `void noBacklight()`  
 Turns off the backlight
 
-* `void setBatteryLevel(int level)`  
-Accepts values from 0 to 3. Smaller values will be treated like 0, bigger values will be treated as 3. 0 turns off the battery symbol. Values from 1 to 3 will be represented by the rectangles above the battery symbol. 
-
-* `void print(long num)`  
-Prints a signed integer between -99999 and 999999. Larger and smaller values will be displayed as -99999 and 999999
-
-* `void print(float num)`  
-Prints a float with 3 decimals. 
-
-* `void print(float num, int precision)`  
-Prints a float with 0 to 3 decimals, based on the `precision` parameter. 
+* `void write(unsigned char ch)`
+Implements write method for Print interface. 
 
 * `void noDisplay()`  
 Turns off the display (doesn't turn off the backlight) 
@@ -41,17 +32,30 @@ Turns the display back on after it has been disabled by `noDisplay()`
 
 ## Internal functioning
 
-° -> 0x33 = 10 + 20 + 01 + 02  
-C -> 0x1D = 10 + 01 + 04 + 08
+Can drive any segmented display up to 16 segments.
 
-```
-  ___10___
- |        |
- 01       20
- |___02___|
- |        |
- 04       40
- |___08___|
-
-```
-
+ * Typical names for segments:
+ *  /-----------\   /-----------\
+ * ||    'a'    || ||    'b'    ||
+ *  \-----------/   \-----------/
+ *  /-\ /--\      /-\      /--\ /-\
+ * |   |\   \    |   |    /   /|   |
+ * |   | \   \   |   |   /   / |   |
+ * |'h'|  \'k'\  |'m'|  /'n'/  |'c'|
+ * |   |   \   \ |   | /   /   |   |
+ * |   |    \   \|   |/   /    |   |
+ *  \-/      \--/ \-/ \--/      \-/
+ *  /-----------\   /-----------\
+ *  ||    'u'    || ||    'p'    ||
+ *  \-----------/   \-----------/
+ *  /-\      /--\ /-\ /--\      /-\
+ * |   |    /   /|   |\   \    |   |
+ * |   |   /   / |   | \   \   |   |
+ * |'g'|  /'t'/  |'s'|  \'r'\  |'d'|
+ * |   | /   /   |   |   \   \ |   |
+ * |   |/   /    |   |    \   \|   |
+ *  \-/ \--/      \-/      \--/ \-/
+ * /-----------\   /-----------\
+ *||    'f'    || ||    'e'    ||
+ * \-----------/   \-----------/
+ */
